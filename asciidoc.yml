@@ -1,0 +1,30 @@
+---
+- hosts: asciidoc-servers
+  sudo: yes
+  vars:
+    user: jenkins
+    home: /var/lib/jenkins
+
+  tasks:
+    - name: install dependencies
+      apt: name={{ item }} state=latest
+      with_items:
+        - asciidoc
+        - dblatex
+        - fonts-ipafont
+        - fonts-migmix
+        - texlive
+        - texlive-lang-cjk
+        - texlive-xetex
+        - wget
+        - xzdec
+
+    - name: create asciidoc config directory
+      file: path={{ home }}/.asciidoc state=directory owner={{ user }} group={{ user }}
+
+    - name: setup a2x.conf
+      copy: src=a2x.conf dest={{ home }}/.asciidoc/a2x.conf owner={{ user }} group={{ user }}
+
+    - name: Sets up a texmf tree
+      command: tlmgr init-usertree creates={{ home }}/texmf/tlpkg/texlive.tlpdb
+      sudo_user: "{{ user }}"
